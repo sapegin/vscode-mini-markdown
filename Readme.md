@@ -13,7 +13,7 @@ A minimalist kit for comfortable Markdown writing: commands, hotkeys, autocomple
 - Hotkeys to add **bold**, and _italic_.
 - Autocomplete of list items.
 - Code style matches Prettier formatting.
-- Doesn’t pollute the editor with too many commands and hotkeys.****
+- Doesn’t pollute the editor with too many commands and hotkeys.
 
 ### Commands
 
