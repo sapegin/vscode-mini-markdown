@@ -15,7 +15,7 @@ A minimalist kit for comfortable Markdown writing: commands, hotkeys, autocomple
 - Code style matches Prettier formatting.
 - Doesn’t pollute the editor with too many commands and hotkeys.
 
-### Commands
+## Commands
 
 You can either run this commands from the Command Palette (<kbd>Cmd</kbd>+<kbd>Shift</kbd>+<kbd>P</kbd> on a Mac, or <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>P</kbd> on Windows), or use hotkeys.
 
@@ -38,7 +38,7 @@ The changelog can be found on the [Changelog.md](./Changelog.md) file.
 
 ## How is it different from other extensions?
 
-Most Markdown extensions are bloated with commands and hotkeys I’d never need. In Mini Markdown I added only commands that I either use very often (like emphasis), or can never remember the correct syntax (like tables). Other tools (like list autocomplete) make the writing comfortable.
+Most Markdown extensions are bloated with commands and hotkeys I’d never need. In Mini Markdown I added only commands that I either use very often (like bold or italic), or can never remember the correct syntax (like tables). Other tools (like list autocomplete) make the writing comfortable.
 
 ## You may also like
 
