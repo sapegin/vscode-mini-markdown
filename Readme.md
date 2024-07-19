@@ -4,7 +4,7 @@ A minimalist kit for comfortable Markdown writing: commands, hotkeys, autocomple
 
 **[Install from Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=sapegin.mini-markdown)**
 
-![Mini Markdown Visual Studio Code extension](./screenshots/screenshot.png)
+![Mini Markdown](screenshots/screenshot.png)
 
 ## Features
 
@@ -25,8 +25,7 @@ You can either run this commands from the Command Palette (<kbd>Cmd</kbd>+<kbd>S
 | Toggle strong emphasis (bold) | `miniMarkdown.toggleStrongEmphasis` | <kbd>Cmd</kbd>+<kbd>I</kbd> | <kbd>Ctrl</kbd>+<kbd>I</kbd> |
 | Insert a table | `miniMarkdown.insertTable` |  |  |
 
-> [!TIP]  
-> To insert a link in Markdown, copy the URL to the clipboard, select the text you want to link, and paste.
+**Tip:** To insert a link in Markdown, copy the URL to the clipboard, select the text you want to link, and paste.
 
 ## Settings
 
