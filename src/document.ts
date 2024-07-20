@@ -5,10 +5,8 @@ import { window, Position, Range, Selection, commands } from 'vscode';
 // check whether `activeTextEditor` returns `undefined` in most cases.
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
-// TODO: Read Prettier config?
-// https://github.com/sapegin/emoji-console-log/blob/master/src/utilities/codeStyle.ts
-const tab = '  ';
-const lineStartsWithListBulletRegExp = /^(\s*)([-*]|\d+\.)(\s+)(\[[ xX]\])?/;
+/** Checks that a line starts with an unordered or ordered list bullet */
+const lineStartsWithListBulletRegExp = /^(\s*)([-*]|\d+\.)(\s+)(\[[ x]\])?/i;
 
 /**
  * Return the range for the:
@@ -58,6 +56,9 @@ function adjustCursorPosition(delta: number) {
   }
 }
 
+/**
+ * Add emphasis (bold, italic, etc.) around a word or selection
+ */
 async function addEmphasis(tag: string, range: Range) {
   const editor = window.activeTextEditor!;
 
@@ -71,6 +72,9 @@ async function addEmphasis(tag: string, range: Range) {
   adjustCursorPosition(tag.length);
 }
 
+/**
+ * Remove emphasis (bold, italic, etc.) around a word or selection
+ */
 async function removeEmphasis(tag: string, range: Range) {
   const editor = window.activeTextEditor!;
 
@@ -84,6 +88,9 @@ async function removeEmphasis(tag: string, range: Range) {
   adjustCursorPosition(-tag.length);
 }
 
+/**
+ * Toggle emphasis (bold, italic, etc.) around a word or selection
+ */
 export async function toggleEmphasis(tag: string) {
   const editor = window.activeTextEditor!;
 
@@ -199,54 +206,39 @@ export async function onEnterKey() {
 /**
  * Indent the current line if it's a list bullet without content
  */
-export async function onTabKey() {
+export function onTabKey() {
   const editor = window.activeTextEditor!;
   const line = editor.document.lineAt(editor.selection.active.line);
 
   // The current line starts with a list bullet
   const match = line.text.match(lineStartsWithListBulletRegExp);
   if (match) {
-    // The current line has ONLY list bullet
-    if (line.text.length === match[0].length) {
-      // Indent the current line
-      await editor.edit((textEdit) => {
-        textEdit.replace(line.range.start, tab);
-      });
-    }
+    // Indent the current line
+    // TODO: Ideally, we should also update the number for ordered lists
+    commands.executeCommand('editor.action.indentLines');
     return;
   }
 
-  // Trigger the default Enter behavior
-  commands.executeCommand('type', { source: 'keyboard', text: '\n' });
+  // Trigger the default Tab behavior
+  commands.executeCommand('tab');
 }
 
 /**
- * Unindent the current line if it's a list bullet without content
+ * Outdent the current line if it's a list bullet without content
  */
-export async function onShiftTabKey() {
+export function onShiftTabKey() {
   const editor = window.activeTextEditor!;
   const line = editor.document.lineAt(editor.selection.active.line);
 
   // The current line starts with a list bullet
   const match = line.text.match(lineStartsWithListBulletRegExp);
   if (match) {
-    // The current line has ONLY list bullet
-    if (line.text.length === match[0].length) {
-      // Unindent the current line
-      await editor.edit((textEdit) => {
-        const firstTabRange = new Range(
-          line.range.start,
-          new Position(
-            line.range.start.line,
-            line.range.start.character + tab.length,
-          ),
-        );
-        textEdit.replace(firstTabRange, '');
-      });
-    }
+    // Outdent the current line
+    // TODO: Ideally, we should also update the number for ordered lists
+    commands.executeCommand('editor.action.outdentLines');
     return;
   }
 
-  // Trigger the default Enter behavior
-  commands.executeCommand('type', { source: 'keyboard', text: '\n' });
+  // Trigger the default Shift+Tab behavior
+  commands.executeCommand('editor.action.outdentLines');
 }

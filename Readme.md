@@ -40,6 +40,8 @@ The changelog can be found on the [Changelog.md](./Changelog.md) file.
 
 Most Markdown extensions are bloated with commands and hotkeys I’d never need. In Mini Markdown I added only commands that I either use very often (like bold or italic), or can never remember the correct syntax (like tables). Other tools (like list autocomplete) make the writing comfortable.
 
+Overall, I try to match the UX of the [Bear app](https://bear.app), which has, in my opinion, one of the best Markdown editors.
+
 ## You may also like
 
 Check out my other Visual Studio Code extensions:
