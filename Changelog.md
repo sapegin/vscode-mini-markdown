@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.3
+
+- Only trigger list autocomplete when Enter is pressed at the end of line.
+
 ## 1.0.2
 
 - Fix incorrect Shift+Tab behavior.

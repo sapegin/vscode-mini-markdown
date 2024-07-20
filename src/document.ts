@@ -169,34 +169,37 @@ export async function onEnterKey() {
   const editor = window.activeTextEditor!;
   const line = editor.document.lineAt(editor.selection.active.line);
 
-  // The current line starts with a list bullet
-  const match = line.text.match(lineStartsWithListBulletRegExp);
-  if (match) {
-    // The current line has ONLY list bullet
-    if (line.text.length === match[0].length) {
-      // Clear the current line
-      await editor.edit((textEdit) => {
-        textEdit.replace(line.range, '');
-      });
-    } else {
-      const number = parseInt(match[2]);
-      if (isNaN(number)) {
-        // Insert a new line with the same bullet as the current line
+  // The cursor is at the end of line
+  if (line.range.end.character === editor.selection.end.character) {
+    // The current line starts with a list bullet
+    const match = line.text.match(lineStartsWithListBulletRegExp);
+    if (match) {
+      // The current line has ONLY list bullet
+      if (line.text.length === match[0].length) {
+        // Clear the current line
         await editor.edit((textEdit) => {
-          textEdit.replace(line.range.end, `\n${match[0]}`);
+          textEdit.replace(line.range, '');
         });
       } else {
-        // Insert a new line with the next number
-        const nextNumber = number + 1;
-        await editor.edit((textEdit) => {
-          textEdit.replace(
-            line.range.end,
-            `\n${match[1]}${nextNumber}.${match[3]}${match[4] ?? ''}`,
-          );
-        });
+        const number = parseInt(match[2]);
+        if (isNaN(number)) {
+          // Insert a new line with the same bullet as the current line
+          await editor.edit((textEdit) => {
+            textEdit.replace(line.range.end, `\n${match[0]}`);
+          });
+        } else {
+          // Insert a new line with the next number
+          const nextNumber = number + 1;
+          await editor.edit((textEdit) => {
+            textEdit.replace(
+              line.range.end,
+              `\n${match[1]}${nextNumber}.${match[3]}${match[4] ?? ''}`,
+            );
+          });
+        }
       }
+      return;
     }
-    return;
   }
 
   // Trigger the default Enter behavior
