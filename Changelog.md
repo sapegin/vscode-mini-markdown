@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.3
+
+- Remove unnecessary files form the package.
+
 ## 1.0.2
 
 - Fix incorrect Shift+Tab behavior.
