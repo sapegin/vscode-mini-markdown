@@ -1,8 +1,16 @@
 # Changelog
 
-## 1.0.3
+## 1.0.5
 
 - Only trigger list autocomplete when Enter is pressed at the end of line.
+
+## 1.0.4
+
+- Remove more unnecessary files form the package.
+
+## 1.0.3
+
+- Remove unnecessary files form the package.
 
 ## 1.0.2
 

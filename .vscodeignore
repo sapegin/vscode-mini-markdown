@@ -1,9 +1,10 @@
-.vscode/**
-.vscode-test/**
+.*
+.*/**
 out/test/**
 out/**/*.map
 src/**
 screenshots/**
-.gitignore
+samples/**
+Contributing.md
 tsconfig.json
-vsc-extension-quickstart.md
+prettier.config.cjs
