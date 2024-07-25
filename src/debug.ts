@@ -2,7 +2,7 @@ import { window } from 'vscode';
 
 const debug = window.createOutputChannel('Mini Markdown');
 
-export function logMessage(...messages: any[]) {
+export function logMessage(...messages: unknown[]) {
   debug.appendLine(
     messages
       .map((x) =>

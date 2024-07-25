@@ -6,7 +6,7 @@ import { window, Position, Range, Selection, commands } from 'vscode';
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
 /** Checks that a line starts with an unordered or ordered list bullet */
-const lineStartsWithListBulletRegExp = /^(\s*)([-*]|\d+\.)(\s+)(\[[ x]\])?/i;
+const lineStartsWithListBulletRegExp = /^(\s*)([*-]|\d+\.)(\s+)(\[[ x]])?/i;
 
 /**
  * Return the range for the:
@@ -80,7 +80,7 @@ async function removeEmphasis(tag: string, range: Range) {
 
   // Remove the tags
   const text = editor.document.getText(range);
-  const newText = text.substring(tag.length, text.length - tag.length);
+  const newText = text.slice(tag.length, -tag.length);
   await editor.edit((textEdit) => {
     textEdit.replace(range, newText);
   });
@@ -94,7 +94,7 @@ async function removeEmphasis(tag: string, range: Range) {
 export async function toggleEmphasis(tag: string) {
   const editor = window.activeTextEditor!;
 
-  const tagEscaped = tag.replaceAll('*', '\\*');
+  const tagEscaped = tag.replaceAll('*', `\\*`);
 
   const range = getWordRange(new RegExp(`${tagEscaped}[-\\w]*${tagEscaped}`));
   if (range === undefined) {
@@ -128,7 +128,7 @@ export async function insertTable() {
     validateInput: (text) => {
       const isValid = text.match(/^\d+x\d+$/i) !== null;
       return isValid
-        ? null
+        ? undefined // Correct value
         : `Incorrect table size, expected format: COLUMNSxROWS`;
     },
   });
@@ -138,17 +138,20 @@ export async function insertTable() {
   }
 
   const [columnsRaw, rowsRaw] = result.split(/x/i);
-  const columns = Number(columnsRaw);
-  const rows = Number(rowsRaw);
+  const numberColumns = Number(columnsRaw);
+  const numberRows = Number(rowsRaw);
 
-  const header = [...Array(columns)]
+  // An array with an `undefined` element for each column
+  const columnsTemplate = Array.from({ length: numberColumns });
+
+  const header = columnsTemplate
     .map((_column, columnIndex) => `Col ${columnIndex + 1}`)
     .join(' | ');
 
-  const headerLine = [...Array(columns)].map(() => `-----`).join(' | ');
+  const headerLine = columnsTemplate.map(() => `-----`).join(' | ');
 
-  const body = [...Array(rows - 1)].map(() => {
-    return [...Array(columns)].map(() => 'x').join(' | ');
+  const body = Array.from({ length: numberRows - 1 }).map(() => {
+    return columnsTemplate.map(() => 'x').join(' | ');
   });
 
   const table = `| ${[header, headerLine, ...body].join(' |\n| ')} |`;
@@ -181,8 +184,8 @@ export async function onEnterKey() {
           textEdit.replace(line.range, '');
         });
       } else {
-        const number = parseInt(match[2]);
-        if (isNaN(number)) {
+        const number = Number.parseInt(match[2]);
+        if (Number.isNaN(number)) {
           // Insert a new line with the same bullet as the current line
           await editor.edit((textEdit) => {
             textEdit.replace(line.range.end, `\n${match[0]}`);
