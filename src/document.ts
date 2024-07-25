@@ -113,7 +113,7 @@ export async function toggleEmphasis(tag: string) {
 }
 
 /**
- * Insert a table of a given dimensions
+ * Insert a table of given dimensions
  *
  * | Col 1 | Col 2 | Col 3 |
  * | ----- | ----- | ----- |

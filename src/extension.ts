@@ -8,9 +8,6 @@ import {
 } from './document';
 import { logMessage } from './debug';
 
-// TODO: Command to add tables
-// TODO: Autocomplete of unordered and ordered lists
-
 export function activate(context: ExtensionContext) {
   logMessage('✍🏼 Mini Markdown starting...');
 
