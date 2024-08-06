@@ -11,16 +11,12 @@ const lineStartsWithListBulletRegExp = /^(\s*)([*-]|\d+\.)(\s+)(\[[ x]])?/i;
 /**
  * Return the range for the:
  * - selection
+ * - selection + tags around
  * - word + tags under cursor
  * - word under cursor
  */
 function getWordRange(wordPattern: RegExp) {
   const editor = window.activeTextEditor!;
-
-  // If something is selected, return the range of selection
-  if (editor.selection.isEmpty === false) {
-    return editor.selection;
-  }
 
   // Word is already wrapped in the tags: _tacocat_
   const taggedRange = editor.document.getWordRangeAtPosition(
@@ -29,6 +25,11 @@ function getWordRange(wordPattern: RegExp) {
   );
   if (taggedRange) {
     return taggedRange;
+  }
+
+  // If something is selected, return the range of selection
+  if (editor.selection.isEmpty === false) {
+    return editor.selection;
   }
 
   // Otherwise, return the default range for the word: tacocat
@@ -48,10 +49,15 @@ function adjustCursorPosition(delta: number) {
     const newStart = new Position(start.line, start.character + delta);
     const newEnd = new Position(end.line, end.character + delta);
     editor.selection = new Selection(newStart, newEnd);
-  } else {
-    // Otherwise move both edges of the selection
+  } else if (delta > 0) {
+    // Otherwise move both edges of the selection when adding a tag
     const newStart = new Position(start.line, start.character + delta);
     const newEnd = new Position(end.line, end.character - delta);
+    editor.selection = new Selection(newStart, newEnd);
+  } else {
+    // Or move only the start position when removing a tag
+    const newStart = new Position(start.line, start.character + delta);
+    const newEnd = new Position(end.line, end.character);
     editor.selection = new Selection(newStart, newEnd);
   }
 }
