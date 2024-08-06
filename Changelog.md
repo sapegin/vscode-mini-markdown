@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.6
+
+- The selection should stay in place when adding/removing tags several times.
+
 ## 1.0.5
 
 - Only trigger list autocomplete when Enter is pressed at the end of line.
