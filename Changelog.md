@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.7
+
+- Improve the selection handling a bit more.
+
 ## 1.0.6
 
 - The selection should stay in place when adding/removing tags several times.

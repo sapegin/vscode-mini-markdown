@@ -40,69 +40,78 @@ function getWordRange(editor: TextEditor, wordPattern: RegExp) {
 /**
  * Adjust cursor position so it stays the same after adding/removing the tags
  */
-function adjustCursorPosition(editor: TextEditor, delta: number) {
-  const { start, end } = editor.selection;
-
+function adjustCursorPosition(
+  editor: TextEditor,
+  { start, end }: Range,
+  delta: number,
+) {
   if (editor.selection.isEmpty) {
-    // If nothing is selected, just move the cursor
-    const newStart = new Position(start.line, start.character + delta);
-    const newEnd = new Position(end.line, end.character + delta);
-    editor.selection = new Selection(newStart, newEnd);
+    // If nothing is selected, just move the cursor using the current cursor
+    // position as the base
+    const newPosition = new Position(
+      editor.selection.start.line,
+      editor.selection.start.character + delta,
+    );
+    editor.selection = new Selection(newPosition, newPosition);
   } else if (delta > 0) {
-    // Otherwise move both edges of the selection when adding a tag
-    const newStart = new Position(start.line, start.character + delta);
-    const newEnd = new Position(end.line, end.character - delta);
-    editor.selection = new Selection(newStart, newEnd);
+    // We're adding a tag, shift the selection right using the found word range
+    // as the base
+    editor.selection = new Selection(
+      start.line,
+      start.character + delta,
+      end.line,
+      end.character + delta,
+    );
   } else {
-    // Or move only the start position when removing a tag
-    const newStart = new Position(start.line, start.character + delta);
-    const newEnd = new Position(end.line, end.character);
-    editor.selection = new Selection(newStart, newEnd);
+    // We're removing a tag, keep the start position but reduce the size using
+    // the found word range as the base
+    editor.selection = new Selection(
+      start.line,
+      start.character,
+      end.line,
+      end.character + delta * 2,
+    );
   }
 }
 
 /**
  * Add emphasis (bold, italic, etc.) around a word or selection
  */
-function addEmphasis(
-  editor: TextEditor,
-  edit: TextEditorEdit,
-  tag: string,
-  range: Range,
-) {
+async function addEmphasis(editor: TextEditor, tag: string, range: Range) {
   // Wrap the text in the tags
   const text = editor.document.getText(range);
   const newText = `${tag}${text}${tag}`;
-  edit.replace(range, newText);
 
-  adjustCursorPosition(editor, tag.length);
+  // Cannot use passed TextEditorEdit because we need to wait until the changes
+  // are applied to the document before we can adjust the selection
+  await editor.edit((textEdit) => {
+    textEdit.replace(range, newText);
+  });
+
+  adjustCursorPosition(editor, range, tag.length);
 }
 
 /**
  * Remove emphasis (bold, italic, etc.) around a word or selection
  */
-function removeEmphasis(
-  editor: TextEditor,
-  edit: TextEditorEdit,
-  tag: string,
-  range: Range,
-) {
+async function removeEmphasis(editor: TextEditor, tag: string, range: Range) {
   // Remove the tags
   const text = editor.document.getText(range);
   const newText = text.slice(tag.length, -tag.length);
-  edit.replace(range, newText);
 
-  adjustCursorPosition(editor, -tag.length);
+  // Cannot use passed TextEditorEdit because we need to wait until the changes
+  // are applied to the document before we can adjust the selection
+  await editor.edit((textEdit) => {
+    textEdit.replace(range, newText);
+  });
+
+  adjustCursorPosition(editor, range, -tag.length);
 }
 
 /**
  * Toggle emphasis (bold, italic, etc.) around a word or selection
  */
-export function toggleEmphasis(
-  editor: TextEditor,
-  edit: TextEditorEdit,
-  tag: string,
-) {
+export function toggleEmphasis(editor: TextEditor, tag: string) {
   const tagEscaped = tag.replaceAll('*', `\\*`);
 
   const range = getWordRange(
@@ -118,9 +127,9 @@ export function toggleEmphasis(
   const isWrappedInTag = text.startsWith(tag) && text.endsWith(tag);
 
   if (isWrappedInTag) {
-    removeEmphasis(editor, edit, tag, range);
+    removeEmphasis(editor, tag, range);
   } else {
-    addEmphasis(editor, edit, tag, range);
+    addEmphasis(editor, tag, range);
   }
 }
 

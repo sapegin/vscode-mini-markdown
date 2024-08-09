@@ -14,14 +14,14 @@ export function activate(context: ExtensionContext) {
   context.subscriptions.push(
     commands.registerTextEditorCommand(
       'miniMarkdown.toggleEmphasis',
-      (textEditor, edit) => {
-        toggleEmphasis(textEditor, edit, '_');
+      (textEditor) => {
+        toggleEmphasis(textEditor, '_');
       },
     ),
     commands.registerTextEditorCommand(
       'miniMarkdown.toggleStrongEmphasis',
-      (textEditor, edit) => {
-        toggleEmphasis(textEditor, edit, '**');
+      (textEditor) => {
+        toggleEmphasis(textEditor, '**');
       },
     ),
     commands.registerTextEditorCommand('miniMarkdown.insertTable', insertTable),
