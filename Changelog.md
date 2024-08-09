@@ -1,7 +1,8 @@
 # Changelog
 
-## 1.0.7
+## 1.1.0
 
+- Tables: ask number of rows and columns in separate prompts to avoid confusion.
 - Improve the selection handling a bit more.
 
 ## 1.0.6

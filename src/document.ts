@@ -11,6 +11,9 @@ import {
 /** Checks that a line starts with an unordered or ordered list bullet */
 const lineStartsWithListBulletRegExp = /^(\s*)([*-]|\d+\.)(\s+)(\[[ x]])?/i;
 
+/** Checks if a given string can be converted to a number */
+const isNumber = (text: string) => /^\d+$/.test(text);
+
 /**
  * Return the range for the:
  * - selection
@@ -143,25 +146,36 @@ export function toggleEmphasis(editor: TextEditor, tag: string) {
  * | x | x | x |
  */
 export async function insertTable(editor: TextEditor) {
-  // TODO: Ask rows and columns separately
-  const result = await window.showInputBox({
-    value: '2x3',
-    placeHolder: 'Choose table size: COLUMNSxROWS',
+  const columnsRaw = await window.showInputBox({
+    value: '',
+    placeHolder: 'How many columns?',
     validateInput: (text) => {
-      const isValid = text.match(/^\d+x\d+$/i) !== null;
-      return isValid
+      return isNumber(text)
         ? undefined // Correct value
-        : `Incorrect table size, expected format: COLUMNSxROWS`;
+        : `Incorrect number of columns, expected a number`;
     },
   });
 
-  if (result === undefined) {
+  if (columnsRaw === undefined) {
     return;
   }
 
-  const [columnsRaw, rowsRaw] = result.split(/x/i);
-  const numberColumns = Number(columnsRaw);
-  const numberRows = Number(rowsRaw);
+  const rowsRaw = await window.showInputBox({
+    value: '',
+    placeHolder: 'How many rows?',
+    validateInput: (text) => {
+      return isNumber(text)
+        ? undefined // Correct value
+        : `Incorrect number of rows, expected a number`;
+    },
+  });
+
+  if (rowsRaw === undefined) {
+    return;
+  }
+
+  const numberColumns = Number.parseInt(columnsRaw);
+  const numberRows = Number.parseInt(rowsRaw);
 
   // An array with an `undefined` element for each column
   const columnsTemplate = Array.from({ length: numberColumns });
@@ -180,8 +194,8 @@ export async function insertTable(editor: TextEditor) {
 
   const line = editor.document.lineAt(editor.selection.active.line);
 
-  // Insert table after the current line (can't use edit passed from the
-  // registerTextEditorCommand because of the async call before)
+  // Insert table after the current line (can't use passed TextEditorEdit
+  // because of the async call before)
   await editor.edit((textEdit) => {
     textEdit.replace(line.range.end, `\n${table}\n`);
   });
