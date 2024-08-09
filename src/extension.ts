@@ -12,15 +12,24 @@ export function activate(context: ExtensionContext) {
   logMessage('✍🏼 Mini Markdown starting...');
 
   context.subscriptions.push(
-    commands.registerCommand('miniMarkdown.toggleEmphasis', () => {
-      toggleEmphasis('_');
-    }),
-    commands.registerCommand('miniMarkdown.toggleStrongEmphasis', () => {
-      toggleEmphasis('**');
-    }),
-    commands.registerCommand('miniMarkdown.insertTable', insertTable),
-    commands.registerCommand('miniMarkdown.onEnterKey', onEnterKey),
-    commands.registerCommand('miniMarkdown.onTabKey', onTabKey),
-    commands.registerCommand('miniMarkdown.onShiftTabKey', onShiftTabKey),
+    commands.registerTextEditorCommand(
+      'miniMarkdown.toggleEmphasis',
+      (textEditor, edit) => {
+        toggleEmphasis(textEditor, edit, '_');
+      },
+    ),
+    commands.registerTextEditorCommand(
+      'miniMarkdown.toggleStrongEmphasis',
+      (textEditor, edit) => {
+        toggleEmphasis(textEditor, edit, '**');
+      },
+    ),
+    commands.registerTextEditorCommand('miniMarkdown.insertTable', insertTable),
+    commands.registerTextEditorCommand('miniMarkdown.onEnterKey', onEnterKey),
+    commands.registerTextEditorCommand('miniMarkdown.onTabKey', onTabKey),
+    commands.registerTextEditorCommand(
+      'miniMarkdown.onShiftTabKey',
+      onShiftTabKey,
+    ),
   );
 }

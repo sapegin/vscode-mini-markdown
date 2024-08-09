@@ -1,9 +1,12 @@
-import { window, Position, Range, Selection, commands } from 'vscode';
-
-// The commands here are only bound to keys with `when` clause containing
-// `editorTextFocus && !editorReadonly` (see package.json), so we don't need to
-// check whether `activeTextEditor` returns `undefined` in most cases.
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
+import {
+  window,
+  Position,
+  Range,
+  Selection,
+  commands,
+  type TextEditorEdit,
+  type TextEditor,
+} from 'vscode';
 
 /** Checks that a line starts with an unordered or ordered list bullet */
 const lineStartsWithListBulletRegExp = /^(\s*)([*-]|\d+\.)(\s+)(\[[ x]])?/i;
@@ -15,9 +18,7 @@ const lineStartsWithListBulletRegExp = /^(\s*)([*-]|\d+\.)(\s+)(\[[ x]])?/i;
  * - word + tags under cursor
  * - word under cursor
  */
-function getWordRange(wordPattern: RegExp) {
-  const editor = window.activeTextEditor!;
-
+function getWordRange(editor: TextEditor, wordPattern: RegExp) {
   // Word is already wrapped in the tags: _tacocat_
   const taggedRange = editor.document.getWordRangeAtPosition(
     editor.selection.start,
@@ -39,9 +40,7 @@ function getWordRange(wordPattern: RegExp) {
 /**
  * Adjust cursor position so it stays the same after adding/removing the tags
  */
-function adjustCursorPosition(delta: number) {
-  const editor = window.activeTextEditor!;
-
+function adjustCursorPosition(editor: TextEditor, delta: number) {
   const { start, end } = editor.selection;
 
   if (editor.selection.isEmpty) {
@@ -65,44 +64,51 @@ function adjustCursorPosition(delta: number) {
 /**
  * Add emphasis (bold, italic, etc.) around a word or selection
  */
-async function addEmphasis(tag: string, range: Range) {
-  const editor = window.activeTextEditor!;
-
+function addEmphasis(
+  editor: TextEditor,
+  edit: TextEditorEdit,
+  tag: string,
+  range: Range,
+) {
   // Wrap the text in the tags
   const text = editor.document.getText(range);
   const newText = `${tag}${text}${tag}`;
-  await editor.edit((textEdit) => {
-    textEdit.replace(range, newText);
-  });
+  edit.replace(range, newText);
 
-  adjustCursorPosition(tag.length);
+  adjustCursorPosition(editor, tag.length);
 }
 
 /**
  * Remove emphasis (bold, italic, etc.) around a word or selection
  */
-async function removeEmphasis(tag: string, range: Range) {
-  const editor = window.activeTextEditor!;
-
+function removeEmphasis(
+  editor: TextEditor,
+  edit: TextEditorEdit,
+  tag: string,
+  range: Range,
+) {
   // Remove the tags
   const text = editor.document.getText(range);
   const newText = text.slice(tag.length, -tag.length);
-  await editor.edit((textEdit) => {
-    textEdit.replace(range, newText);
-  });
+  edit.replace(range, newText);
 
-  adjustCursorPosition(-tag.length);
+  adjustCursorPosition(editor, -tag.length);
 }
 
 /**
  * Toggle emphasis (bold, italic, etc.) around a word or selection
  */
-export async function toggleEmphasis(tag: string) {
-  const editor = window.activeTextEditor!;
-
+export function toggleEmphasis(
+  editor: TextEditor,
+  edit: TextEditorEdit,
+  tag: string,
+) {
   const tagEscaped = tag.replaceAll('*', `\\*`);
 
-  const range = getWordRange(new RegExp(`${tagEscaped}[-\\w]*${tagEscaped}`));
+  const range = getWordRange(
+    editor,
+    new RegExp(`${tagEscaped}[-\\w]*${tagEscaped}`),
+  );
   if (range === undefined) {
     return;
   }
@@ -112,9 +118,9 @@ export async function toggleEmphasis(tag: string) {
   const isWrappedInTag = text.startsWith(tag) && text.endsWith(tag);
 
   if (isWrappedInTag) {
-    await removeEmphasis(tag, range);
+    removeEmphasis(editor, edit, tag, range);
   } else {
-    await addEmphasis(tag, range);
+    addEmphasis(editor, edit, tag, range);
   }
 }
 
@@ -127,7 +133,8 @@ export async function toggleEmphasis(tag: string) {
  * | x | x | x |
  * | x | x | x |
  */
-export async function insertTable() {
+export async function insertTable(editor: TextEditor) {
+  // TODO: Ask rows and columns separately
   const result = await window.showInputBox({
     value: '2x3',
     placeHolder: 'Choose table size: COLUMNSxROWS',
@@ -162,10 +169,10 @@ export async function insertTable() {
 
   const table = `| ${[header, headerLine, ...body].join(' |\n| ')} |`;
 
-  const editor = window.activeTextEditor!;
   const line = editor.document.lineAt(editor.selection.active.line);
 
-  // Insert table after the current line
+  // Insert table after the current line (can't use edit passed from the
+  // registerTextEditorCommand because of the async call before)
   await editor.edit((textEdit) => {
     textEdit.replace(line.range.end, `\n${table}\n`);
   });
@@ -174,8 +181,7 @@ export async function insertTable() {
 /**
  * Insert a list bullet on Enter press at the end of a list item line
  */
-export async function onEnterKey() {
-  const editor = window.activeTextEditor!;
+export function onEnterKey(editor: TextEditor, edit: TextEditorEdit) {
   const line = editor.document.lineAt(editor.selection.active.line);
 
   // The cursor is at the end of line
@@ -186,25 +192,19 @@ export async function onEnterKey() {
       // The current line has ONLY list bullet
       if (line.text.length === match[0].length) {
         // Clear the current line
-        await editor.edit((textEdit) => {
-          textEdit.replace(line.range, '');
-        });
+        edit.replace(line.range, '');
       } else {
         const number = Number.parseInt(match[2]);
         if (Number.isNaN(number)) {
           // Insert a new line with the same bullet as the current line
-          await editor.edit((textEdit) => {
-            textEdit.replace(line.range.end, `\n${match[0]}`);
-          });
+          edit.replace(line.range.end, `\n${match[0]}`);
         } else {
           // Insert a new line with the next number
           const nextNumber = number + 1;
-          await editor.edit((textEdit) => {
-            textEdit.replace(
-              line.range.end,
-              `\n${match[1]}${nextNumber}.${match[3]}${match[4] ?? ''}`,
-            );
-          });
+          edit.replace(
+            line.range.end,
+            `\n${match[1]}${nextNumber}.${match[3]}${match[4] ?? ''}`,
+          );
         }
       }
       return;
@@ -218,8 +218,7 @@ export async function onEnterKey() {
 /**
  * Indent the current line if it's a list bullet without content
  */
-export function onTabKey() {
-  const editor = window.activeTextEditor!;
+export function onTabKey(editor: TextEditor) {
   const line = editor.document.lineAt(editor.selection.active.line);
 
   // The current line starts with a list bullet
@@ -238,8 +237,7 @@ export function onTabKey() {
 /**
  * Outdent the current line if it's a list bullet without content
  */
-export function onShiftTabKey() {
-  const editor = window.activeTextEditor!;
+export function onShiftTabKey(editor: TextEditor) {
   const line = editor.document.lineAt(editor.selection.active.line);
 
   // The current line starts with a list bullet
