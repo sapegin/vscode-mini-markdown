@@ -4,6 +4,8 @@ A minimalist kit for comfortable Markdown writing: commands, hotkeys, autocomple
 
 **[Install from Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=sapegin.mini-markdown)**
 
+[![Washing your code. A book on clean code for frontend developers](https://sapegin.me/images/washing-code-github.jpg)](https://sapegin.me/book/)
+
 ![Mini Markdown](screenshots/screenshot.png)
 
 ## Features
