@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.1
+
+- Update readme.
+
 ## 1.1.0
 
 - Tables: ask number of rows and columns in separate prompts to avoid confusion.
