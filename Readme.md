@@ -1,5 +1,7 @@
 # Mini Markdown ✍🏼
 
+**[Repository moved](https://github.com/sapegin/raccoon-vscode/tree/main/extensions/mini-markdown)**
+
 A minimalist kit for comfortable Markdown writing: commands, hotkeys, autocomplete…
 
 **[Install from Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=sapegin.mini-markdown)**
